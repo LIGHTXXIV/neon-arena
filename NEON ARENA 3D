@@ -1,0 +1,1810 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+  <title>NEON ARENA 3D</title>
+  <style>
+ :root {
+  color-scheme: dark;
+  --bg: #070c15;
+  --panel: #101c2a;
+  --ink: #edf8ff;
+  --muted: #9ab0c5;
+  --accent: #62f5d7;
+  --line: #294357;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, sans-serif;
+}
+button, select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #162b3b;
+  padding: 10px 14px;
+  font-weight: 700;
+  touch-action: none;
+}
+button:hover, button:focus-visible {
+  border-color: var(--accent);
+}
+button:active {
+  transform: scale(.97);
+}
+button.primary {
+  background: var(--accent);
+  color: #052c26;
+  border: 0;
+}
+button:disabled {
+  opacity: .45;
+  cursor: default;
+}
+main {
+  max-width: 1160px;
+  padding: 14px;
+  margin: auto;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+h1 {
+  margin: 0;
+  font-size: clamp(19px, 4vw, 28px);
+  letter-spacing: .09em;
+  color: var(--accent);
+}
+.subtitle, .hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+.stage {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0b1726;
+  min-height: 300px;
+}
+#game {
+  display: block;
+  width: 100%;
+  height: clamp(320px, 61vh, 680px);
+  touch-action: none;
+  outline: none;
+}
+.hud {
+  position: absolute;
+  inset: 10px 10px auto;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 6px;
+  pointer-events: none;
+}
+.stat {
+  background: #071320df;
+  border: 1px solid #345365;
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+.stat small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: .06em;
+}
+.stat strong {
+  font-size: clamp(13px, 2.5vw, 22px);
+  font-variant-numeric: tabular-nums;
+}
+.bar {
+  height: 4px;
+  margin: 4px auto 0;
+  background: #243141;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  transition: width .15s;
+}
+.reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%,-50%);
+  pointer-events: none;
+}
+.reticle:before, .reticle:after {
+  content: '';
+  position: absolute;
+  background: #e5fbff;
+  box-shadow: 0 0 4px #000;
+}
+.reticle:before {
+  left: 11px;
+  top: 0;
+  width: 2px;
+  height: 24px;
+}
+.reticle:after {
+  top: 11px;
+  left: 0;
+  height: 2px;
+  width: 24px;
+}
+.reticle.hit {
+  transform: translate(-50%,-50%) rotate(45deg);
+}
+.reticle.hit:before, .reticle.hit:after {
+  background: #ffdb62;
+}
+.vignette {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 90px #03081180;
+}
+.damage {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(transparent 35%, #ff334a99);
+  opacity: 0;
+}
+.toast {
+  position: absolute;
+  top: 23%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #efffff;
+  text-shadow: 0 2px 5px #000;
+  pointer-events: none;
+  text-align: center;
+  font-weight: 800;
+  width: 90%;
+}
+.feed {
+  position: absolute;
+  right: 10px;
+  bottom: 12px;
+  color: #d7ecfa;
+  font-size: 12px;
+  text-align: right;
+  pointer-events: none;
+}
+.weapon-label {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px #000;
+  pointer-events: none;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #040a15bf;
+  padding: 14px;
+  overflow-y: auto;
+}
+.overlay[hidden] {
+  display: none;
+}
+.panel {
+  width: min(100%, 430px);
+  border: 1px solid #38586b;
+  border-radius: 15px;
+  background: #0f1d2bf5;
+  padding: 18px;
+  text-align: center;
+}
+.panel h2 {
+  color: var(--accent);
+  font-size: clamp(22px, 4vw, 34px);
+  margin: 0 0 5px;
+}
+.panel p {
+  color: #c4d5e5;
+  margin: 8px 0 14px;
+  font-size: 14px;
+}
+.settings {
+  display: grid;
+  gap: 8px;
+  margin: 13px 0;
+  text-align: left;
+}
+.settings label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #c9d9e6;
+  font-size: 13px;
+}
+select {
+  min-width: 110px;
+  background: #142838;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px;
+}
+.menu-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 45px);
+  grid-template-rows: repeat(2, 40px);
+  gap: 4px;
+}
+.pad button {
+  padding: 0;
+  font-size: 17px;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+.hint {
+  line-height: 1.6;
+}
+.record {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 9px;
+}
+@media (max-width: 600px) {
+  main {
+    padding: 7px;
+  }
+  .hud {
+    inset: 5px 5px auto;
+    gap: 3px;
+  }
+  .stat {
+    padding: 5px 2px;
+  }
+  .stat small {
+    font-size: 8px;
+  }
+  .pad {
+    grid-template-columns: repeat(3, 36px);
+    grid-template-rows: repeat(2,36px);
+  }
+  .actions button {
+    padding: 9px 7px;
+    font-size: 11px;
+  }
+  .panel {
+    padding: 12px;
+  }
+  .panel p {
+    font-size: 12px;
+  }
+  .feed {
+    max-width: 45%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+#radar {
+  position: absolute;
+  right: 12px;
+  top: 80px;
+  width: 92px;
+  height: 92px;
+  border: 1px solid #486878;
+  border-radius: 8px;
+  opacity: .9;
+  pointer-events: none;
+}
+#compass {
+  position: absolute;
+  top: 78px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #b7e5e8;
+  text-shadow: 0 2px 4px #000;
+  pointer-events: none;
+}
+#remaining {
+  position: absolute;
+  left: 12px;
+  top: 79px;
+  color: #c2d8e4;
+  font-size: 11px;
+  pointer-events: none;
+  text-shadow: 0 2px 3px #000;
+}
+[hidden] {
+  display: none !important;
+}
+.header-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.report {
+  margin-top: 16px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.report summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 700;
+}
+#sessionReport {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(130px,1fr));
+  gap: 12px;
+  padding: 12px 2px 2px;
+}
+#sessionReport div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#sessionReport span {
+  font-size: 12px;
+  color: var(--muted);
+}
+#sessionReport strong {
+  color: var(--accent);
+  font-size: 19px;
+}
+.stage:fullscreen {
+  width:100%;
+  height:100%;
+  border:0;
+  border-radius:0;
+}
+.stage:fullscreen #game {
+  height:100%;
+}
+@media (max-width:600px) {
+  #radar {
+    top: 58px;
+    right: 6px;
+    width:64px;
+    height:64px;
+  }
+  #compass, #remaining {
+    top:58px;
+    font-size:9px;
+  }
+  #remaining {
+    left:6px;
+  }
+  .header-buttons button {
+    font-size:11px;
+    padding:7px;
+  }
+}
+  </style>
+ </head>
+ <body>
+  <main>
+   <header>
+    <div>
+     <h1>NEON ARENA 3D</h1>
+     <div class="subtitle">
+      FPS · Operação robótica
+     </div>
+    </div>
+    <div class="header-buttons">
+     <button id="fullscreen" type="button">Tela cheia</button>
+     <button id="pause" type="button">Pausar</button>
+    </div>
+   </header>
+   <div class="stage" id="stage">
+    <canvas aria-label="Arena tridimensional de treinamento" id="game" tabindex="0">
+    </canvas>
+    <div class="hud">
+     <div class="stat">
+      <small>VIDA</small>
+      <strong id="hp">100</strong>
+      <div class="bar">
+       <i id="hpBar">
+       </i>
+      </div>
+     </div>
+     <div class="stat">
+      <small>FASE</small>
+      <strong id="wave">1/3</strong>
+     </div>
+     <div class="stat">
+      <small>PONTOS</small>
+      <strong id="score">0</strong>
+     </div>
+     <div class="stat">
+      <small>MUNIÇÃO</small>
+      <strong id="ammo">12/12</strong>
+     </div>
+     <div class="stat">
+      <small>TEMPO</small>
+      <strong id="time">0</strong>
+     </div>
+    </div>
+    <canvas aria-label="Radar" height="112" hidden="" id="radar" width="112">
+    </canvas>
+    <div hidden="" id="compass">
+    </div>
+    <div hidden="" id="remaining">
+    </div>
+    <div class="vignette">
+    </div>
+    <div class="damage" id="damage">
+    </div>
+    <div class="reticle" id="reticle">
+    </div>
+    <div class="toast" id="toast">
+    </div>
+    <div class="weapon-label" id="weaponLabel">
+    </div>
+    <div class="feed" id="feed">
+    </div>
+    <div class="overlay" id="overlay">
+     <section class="panel">
+      <h2 id="menuTitle">NEON ARENA</h2>
+      <p id="menuText">Sobreviva a três ondas de robôs em uma arena 3D.</p>
+      <div class="settings" id="settings">
+       <label>
+        Arena
+        <select id="map">
+         <option value="0">
+          Estação Neon
+         </option>
+         <option value="1">
+          Hangar Ômega
+         </option>
+         <option value="2">
+          Laboratório
+         </option>
+        </select>
+       </label>
+       <label>
+        Dificuldade
+        <select id="difficulty">
+         <option value="easy">
+          Fácil
+         </option>
+         <option selected="" value="normal">
+          Normal
+         </option>
+         <option value="hard">
+          Difícil
+         </option>
+        </select>
+       </label>
+       <label>
+        Radar
+        <input checked="" id="radarToggle" type="checkbox"/>
+       </label>
+       <label>
+        Qualidade
+        <select id="quality">
+         <option value="auto">
+          Automática
+         </option>
+         <option value="low">
+          Leve
+         </option>
+         <option value="high">
+          Alta
+         </option>
+        </select>
+       </label>
+       <label>
+        Som
+        <input checked="" id="sound" type="checkbox"/>
+       </label>
+       <label>
+        Sensibilidade
+        <input id="sensitivity" max="10" min="1" type="range" value="4"/>
+       </label>
+      </div>
+      <div class="menu-actions">
+       <button class="primary" id="start" type="button">
+        JOGAR
+       </button>
+       <button hidden="" id="resume" type="button">
+        Continuar
+       </button>
+      </div>
+      <div class="record" id="record">
+       Recorde local: 0
+      </div>
+     </section>
+    </div>
+   </div>
+   <div class="controls">
+    <div aria-label="Movimento" class="pad">
+     <span>
+     </span>
+     <button aria-label="Avançar" data-key="w">
+      ▲
+     </button>
+     <span>
+     </span>
+     <button aria-label="Esquerda" data-key="a">
+      ◀
+     </button>
+     <button aria-label="Recuar" data-key="s">
+      ▼
+     </button>
+     <button aria-label="Direita" data-key="d">
+      ▶
+     </button>
+    </div>
+    <div class="actions">
+     <button aria-label="Virar à esquerda" data-key="arrowleft">
+      ↶
+     </button>
+     <button aria-label="Virar à direita" data-key="arrowright">
+      ↷
+     </button>
+     <button id="switch" type="button">
+      ARMA
+     </button>
+     <button id="reload" type="button">
+      RECARREGAR
+     </button>
+     <button class="primary" id="fire" type="button">
+      ATIRAR
+     </button>
+    </div>
+   </div>
+   <p class="hint">
+    PC: WASD para andar, mouse ou setas para mirar, clique ou espaço para atirar, R para recarregar, 1–3 para escolher arma, Shift para correr e P para pausar. Celular: arraste a arena para mirar e use os botões. Clique na arena para capturar o mouse.
+   </p>
+   <details class="report">
+    <summary>
+     Estatísticas desta sessão
+    </summary>
+    <div id="sessionReport">
+    </div>
+   </details>
+  </main>
+<script>
+'use strict';
+// NEON ARENA — motor WebGL nativo. Não requer bibliotecas externas.
+const $ = id => document.getElementById(id);
+const canvas = $('game');
+const gl = canvas.getContext('webgl', { antialias: true, alpha: false });
+const PI = Math.PI;
+const TAU = PI * 2;
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const lerp = (a, b, t) => a + (b - a) * t;
+const random = (a, b) => a + Math.random() * (b - a);
+const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const vec = (x = 0, y = 0, z = 0) => [x, y, z];
+function color(hex) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255];
+}
+const C = {
+    floor: color('263848'), ceiling: color('112132'), dark: color('182737'),
+    stripe: color('48ddce'), white: color('d2ebf7'), black: color('111b25'),
+    metal: color('59778d'), red: color('ff4c67'), gold: color('ffd375'),
+    green: color('54e5a4'), blue: color('6cb8ff'), purple: color('ac7aff'),
+    sky: color('0c1828'), gray: color('364c5d')
+};
+const MAPS = [
+    { name: 'Estação Neon', wall: '455f75', trim: '41e0d2', layout: [
+            '################',
+            '#..............#',
+            '#..##......##..#',
+            '#..##......##..#',
+            '#..............#',
+            '#......##......#',
+            '#......##......#',
+            '#..............#',
+            '#..#........#..#',
+            '#..#........#..#',
+            '#..............#',
+            '#......##......#',
+            '#..............#',
+            '#..##......##..#',
+            '#.P............#',
+            '################'
+        ] },
+    { name: 'Hangar Ômega', wall: '665a4f', trim: 'ffc16a', layout: [
+            '################',
+            '#..............#',
+            '#.###......###.#',
+            '#..............#',
+            '#...#......#...#',
+            '#...#......#...#',
+            '#..............#',
+            '#......##......#',
+            '#......##......#',
+            '#..............#',
+            '#...#......#...#',
+            '#...#......#...#',
+            '#..............#',
+            '#.###......###.#',
+            '#......P.......#',
+            '################'
+        ] },
+    { name: 'Laboratório', wall: '514c73', trim: 'ac7aff', layout: [
+            '################',
+            '#..............#',
+            '#.##...##...##.#',
+            '#..............#',
+            '#...##....##...#',
+            '#..............#',
+            '#.#..........#.#',
+            '#.#..........#.#',
+            '#..............#',
+            '#...#......#...#',
+            '#...#......#...#',
+            '#..............#',
+            '#.##...##...##.#',
+            '#..............#',
+            '#............P.#',
+            '################'
+        ] }
+];
+const WEAPONS = [
+    { name: 'Pistola N-12', capacity: 12, delay: .29, reload: .85, damage: 36, spread: .009, pellets: 1, automatic: false, tone: 145, size: .76, tint: '7fa0af' },
+    { name: 'Rifle Pulse', capacity: 25, delay: .105, reload: 1.3, damage: 23, spread: .018, pellets: 1, automatic: true, tone: 105, size: 1.05, tint: '6abef2' },
+    { name: 'Dispersora Nova', capacity: 6, delay: .65, reload: 1.4, damage: 20, spread: .10, pellets: 6, automatic: false, tone: 72, size: 1.12, tint: 'e6b36c' }
+];
+const TYPES = {
+    scout: { name: 'Batedor', hp: 45, speed: 2.05, damage: 7, range: 1.05, interval: .9, size: .83, tint: '65d9ec', points: 100 },
+    guard: { name: 'Sentinela', hp: 75, speed: 1.35, damage: 9, range: 5.4, interval: 1.65, size: 1, tint: 'ff9a55', points: 150 },
+    heavy: { name: 'Titã', hp: 180, speed: .82, damage: 15, range: 4.7, interval: 2, size: 1.25, tint: 'b58aff', points: 300 }
+};
+const DIFFICULTIES = {
+    easy: { speed: .78, damage: .65, count: -1, bonus: 1 },
+    normal: { speed: 1, damage: 1, count: 0, bonus: 1 },
+    hard: { speed: 1.24, damage: 1.35, count: 2, bonus: 1.25 }
+};
+const WAVES = [
+    ['scout', 'scout', 'guard', 'scout'],
+    ['scout', 'guard', 'guard', 'scout', 'heavy', 'scout'],
+    ['guard', 'heavy', 'scout', 'guard', 'heavy', 'scout', 'guard', 'scout']
+];
+const keys = new Set();
+const player = { x: 0, z: 0, yaw: 0, pitch: 0, hp: 100, slot: 0, recoil: 0, bob: 0, invincible: 0 };
+const state = { mode: 'menu', map: 0, difficulty: 'normal', wave: 0, score: 0, elapsed: 0, cooldown: 0, reload: 0, flash: 0, hit: 0, damage: 0, notice: 0, between: 0, best: 0, fired: 0, landed: 0, kills: 0, clock: 0, fireHeld: false, queue: [], spawnTimer: 0 };
+let enemies = [];
+let pickups = [];
+let effects = [];
+let feed = [];
+let world = [];
+let spawnCells = [];
+let mags = WEAPONS.map(w => w.capacity);
+let audio = null;
+let drag = null;
+let previous = 0;
+let map = MAPS[0];
+let themeWall = color(map.wall);
+let themeTrim = color(map.trim);
+let renderer = null;
+try {
+    state.best = Number(localStorage.getItem('neon-arena-best-v2')) || 0;
+}
+catch (_) { /* Modo privado permite jogar sem recorde. */ }
+// Matrizes em ordem de colunas, conforme exigido pelo GLSL.
+function identity() {
+    return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+}
+function multiply(a, b) {
+    const out = new Float32Array(16);
+    for (let c = 0; c < 4; c++) {
+        for (let r = 0; r < 4; r++) {
+            out[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+        }
+    }
+    return out;
+}
+function model(x, y, z, sx, sy, sz, yaw = 0) {
+    const c = Math.cos(yaw), s = Math.sin(yaw);
+    return new Float32Array([c * sx, 0, -s * sx, 0, 0, sy, 0, 0, s * sz, 0, c * sz, 0, x, y, z, 1]);
+}
+function perspective(fov, aspect, near, far) {
+    const f = 1 / Math.tan(fov / 2);
+    const d = near - far;
+    return new Float32Array([f / aspect, 0, 0, 0, 0, f, 0, 0, 0, 0, (far + near) / d, -1, 0, 0, 2 * far * near / d, 0]);
+}
+function dot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function cross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function normalize(a) { const d = Math.hypot(...a) || 1; return a.map(v => v / d); }
+function viewMatrix(eye, direction) {
+    const back = normalize(direction.map(n => -n));
+    const right = normalize(cross([0, 1, 0], back));
+    const up = cross(back, right);
+    return new Float32Array([right[0], up[0], back[0], 0, right[1], up[1], back[1], 0, right[2], up[2], back[2], 0, -dot(right, eye), -dot(up, eye), -dot(back, eye), 1]);
+}
+function forward() {
+    const c = Math.cos(player.pitch);
+    return [Math.sin(player.yaw) * c, Math.sin(player.pitch), -Math.cos(player.yaw) * c];
+}
+// Cubo com normais independentes por face. Todos os objetos têm volume real.
+function cubeVertices() {
+    const faces = [
+        { n: [0, 0, 1], p: [[-.5, -.5, .5], [.5, -.5, .5], [.5, .5, .5], [-.5, .5, .5]] },
+        { n: [0, 0, -1], p: [[.5, -.5, -.5], [-.5, -.5, -.5], [-.5, .5, -.5], [.5, .5, -.5]] },
+        { n: [1, 0, 0], p: [[.5, -.5, .5], [.5, -.5, -.5], [.5, .5, -.5], [.5, .5, .5]] },
+        { n: [-1, 0, 0], p: [[-.5, -.5, -.5], [-.5, -.5, .5], [-.5, .5, .5], [-.5, .5, -.5]] },
+        { n: [0, 1, 0], p: [[-.5, .5, .5], [.5, .5, .5], [.5, .5, -.5], [-.5, .5, -.5]] },
+        { n: [0, -1, 0], p: [[-.5, -.5, -.5], [.5, -.5, -.5], [.5, -.5, .5], [-.5, -.5, .5]] }
+    ];
+    const data = [];
+    for (const face of faces) {
+        for (const i of [0, 1, 2, 0, 2, 3])
+            data.push(...face.p[i], ...face.n);
+    }
+    return new Float32Array(data);
+}
+const VS = `
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+uniform mat4 uModel;
+uniform mat4 uVP;
+varying vec3 vNormal;
+varying vec3 vWorld;
+void main() {
+  vec4 p = uModel * vec4(aPosition, 1.0);
+  vWorld = p.xyz;
+  vNormal = normalize(mat3(uModel) * aNormal);
+  gl_Position = uVP * p;
+}`;
+const FS = `
+precision mediump float;
+uniform vec3 uColor;
+uniform vec3 uEye;
+uniform float uGlow;
+uniform float uFog;
+varying vec3 vNormal;
+varying vec3 vWorld;
+void main() {
+  vec3 lightDir = normalize(vec3(-0.35, 1.0, 0.55));
+  float light = 0.50 + 0.50 * max(dot(normalize(vNormal), lightDir), 0.0);
+  float fog = clamp(length(vWorld - uEye) * uFog, 0.0, 0.78);
+  vec3 lit = uColor * mix(light, 1.25, uGlow);
+  gl_FragColor = vec4(mix(lit, vec3(0.05,0.09,0.15), fog), 1.0);
+}`;
+function compile(type, source) {
+    const shader = gl.createShader(type);
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS))
+        throw new Error(gl.getShaderInfoLog(shader));
+    return shader;
+}
+function initRenderer() {
+    const program = gl.createProgram();
+    const vertex = compile(gl.VERTEX_SHADER, VS);
+    const fragment = compile(gl.FRAGMENT_SHADER, FS);
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS))
+        throw new Error(gl.getProgramInfoLog(program));
+    gl.useProgram(program);
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, cubeVertices(), gl.STATIC_DRAW);
+    const pos = gl.getAttribLocation(program, 'aPosition');
+    const normal = gl.getAttribLocation(program, 'aNormal');
+    gl.enableVertexAttribArray(pos);
+    gl.enableVertexAttribArray(normal);
+    gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 24, 0);
+    gl.vertexAttribPointer(normal, 3, gl.FLOAT, false, 24, 12);
+    gl.enable(gl.DEPTH_TEST);
+    gl.clearColor(...C.sky, 1);
+    const uniforms = {};
+    for (const name of ['uModel', 'uVP', 'uColor', 'uEye', 'uGlow', 'uFog'])
+        uniforms[name] = gl.getUniformLocation(program, name);
+    return { program, uniforms };
+}
+function camera(vp, eye, fog) {
+    const u = renderer.uniforms;
+    gl.uniformMatrix4fv(u.uVP, false, vp);
+    gl.uniform3fv(u.uEye, eye);
+    gl.uniform1f(u.uFog, fog);
+}
+function drawBox(x, y, z, sx, sy, sz, tint, glow = 0, yaw = 0) {
+    const u = renderer.uniforms;
+    gl.uniformMatrix4fv(u.uModel, false, model(x, y, z, sx, sy, sz, yaw));
+    gl.uniform3fv(u.uColor, tint);
+    gl.uniform1f(u.uGlow, glow);
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+}
+function staticBox(x, y, z, sx, sy, sz, tint, glow = 0) {
+    world.push({ matrix: model(x, y, z, sx, sy, sz), tint, glow });
+}
+function drawWorld() {
+    const u = renderer.uniforms;
+    for (const item of world) {
+        gl.uniformMatrix4fv(u.uModel, false, item.matrix);
+        gl.uniform3fv(u.uColor, item.tint);
+        gl.uniform1f(u.uGlow, item.glow);
+        gl.drawArrays(gl.TRIANGLES, 0, 36);
+    }
+}
+function resize() {
+    const ratio = prefs.quality === 'low' ? .75 : Math.min(window.devicePixelRatio || 1, prefs.quality === 'high' ? 2 : 1.35);
+    const w = Math.round(canvas.clientWidth * ratio);
+    const h = Math.round(canvas.clientHeight * ratio);
+    if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+    }
+    gl.viewport(0, 0, canvas.width, canvas.height);
+}
+// Ambiente: o mapa lógico é convertido em blocos tridimensionais.
+const TILE = 2;
+function tile(x, z) { return map.layout[Math.floor(z / TILE)]?.[Math.floor(x / TILE)] || '#'; }
+function solid(x, z) { return tile(x, z) === '#'; }
+function free(x, z, r = .31) {
+    return !solid(x - r, z - r) && !solid(x + r, z - r) && !solid(x - r, z + r) && !solid(x + r, z + r);
+}
+function move(entity, dx, dz, radius = .31) {
+    if (free(entity.x + dx, entity.z, radius))
+        entity.x += dx;
+    if (free(entity.x, entity.z + dz, radius))
+        entity.z += dz;
+}
+function center(col, row) { return { x: (col + .5) * TILE, z: (row + .5) * TILE }; }
+function makeWorld() {
+    world = [];
+    spawnCells = [];
+    const width = map.layout[0].length * TILE;
+    const height = map.layout.length * TILE;
+    staticBox(width / 2, -.14, height / 2, width, .25, height, C.floor);
+    for (let row = 0; row < map.layout.length; row++) {
+        for (let col = 0; col < map.layout[row].length; col++) {
+            const cell = map.layout[row][col];
+            const p = center(col, row);
+            if (cell === '#') {
+                addWall(p.x, p.z, col, row);
+            }
+            else {
+                spawnCells.push(p);
+                if ((row + col) % 2 === 0)
+                    staticBox(p.x, .003, p.z, 1.94, .018, 1.94, C.gray);
+                if (row % 4 === 0 && col % 4 === 0)
+                    staticBox(p.x, .026, p.z, .22, .025, .22, themeTrim, .85);
+                if (cell === 'P') {
+                    player.x = p.x;
+                    player.z = p.z;
+                }
+            }
+        }
+    }
+    // Trilhos de iluminação acompanham a parte alta do perímetro.
+    staticBox(width / 2, 3.15, .55, width - 1, .08, .12, themeTrim, .95);
+    staticBox(width / 2, 3.15, height - .55, width - 1, .08, .12, themeTrim, .95);
+    staticBox(.55, 3.15, height / 2, .12, .08, height - 1, themeTrim, .95);
+    staticBox(width - .55, 3.15, height / 2, .12, .08, height - 1, themeTrim, .95);
+}
+function addWall(x, z, col, row) {
+    staticBox(x, 1.55, z, 2, 3.1, 2, themeWall);
+    staticBox(x, 2.70, z, 2.025, .075, 2.025, themeTrim, .75);
+    staticBox(x, .23, z, 2.035, .12, 2.035, C.dark);
+    if ((row + col) % 3 === 0)
+        staticBox(x, 1.50, z, 2.015, .11, 2.015, C.metal);
+}
+// Caminho de busca em largura para os robôs contornarem as paredes.
+function pathStep(bot) {
+    const sx = Math.floor(bot.x / TILE), sz = Math.floor(bot.z / TILE);
+    const tx = Math.floor(player.x / TILE), tz = Math.floor(player.z / TILE);
+    if (sx === tx && sz === tz)
+        return { x: player.x, z: player.z };
+    const width = map.layout[0].length;
+    const start = sz * width + sx;
+    const goal = tz * width + tx;
+    const queue = [start];
+    const prev = new Map([[start, -1]]);
+    for (let i = 0; i < queue.length; i++) {
+        const id = queue[i];
+        if (id === goal)
+            break;
+        const x = id % width, z = Math.floor(id / width);
+        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const nx = x + dx, nz = z + dz, n = nz * width + nx;
+            if (map.layout[nz]?.[nx] && map.layout[nz][nx] !== '#' && !prev.has(n)) {
+                prev.set(n, id);
+                queue.push(n);
+            }
+        }
+    }
+    if (!prev.has(goal))
+        return { x: player.x, z: player.z };
+    let next = goal;
+    while (prev.get(next) !== start && prev.get(next) !== -1)
+        next = prev.get(next);
+    return center(next % width, Math.floor(next / width));
+}
+function lineClear(x, z, tx, tz) {
+    const d = Math.hypot(tx - x, tz - z);
+    const count = Math.ceil(d / .15);
+    for (let k = 1; k < count; k++)
+        if (solid(lerp(x, tx, k / count), lerp(z, tz, k / count)))
+            return false;
+    return true;
+}
+// Raio contra caixas alinhadas aos eixos, usado na detecção dos disparos.
+function rayBox(origin, dir, min, max) {
+    let lo = 0, hi = 100;
+    for (let axis = 0; axis < 3; axis++) {
+        if (Math.abs(dir[axis]) < 1e-7) {
+            if (origin[axis] < min[axis] || origin[axis] > max[axis])
+                return Infinity;
+        }
+        else {
+            let a = (min[axis] - origin[axis]) / dir[axis], b = (max[axis] - origin[axis]) / dir[axis];
+            if (a > b)
+                [a, b] = [b, a];
+            lo = Math.max(lo, a);
+            hi = Math.min(hi, b);
+            if (hi < lo)
+                return Infinity;
+        }
+    }
+    return lo;
+}
+function wallDistance(origin, dir) {
+    let closest = 75;
+    for (let z = 0; z < map.layout.length; z++) {
+        for (let x = 0; x < map.layout[z].length; x++) {
+            if (map.layout[z][x] !== '#')
+                continue;
+            closest = Math.min(closest, rayBox(origin, dir, [x * TILE, 0, z * TILE], [(x + 1) * TILE, 3.1, (z + 1) * TILE]));
+        }
+    }
+    if (dir[1] < -.001)
+        closest = Math.min(closest, -origin[1] / dir[1]);
+    return closest;
+}
+function spawnEnemy(type) {
+    const def = TYPES[type];
+    let candidates = spawnCells.filter(p => distance(p, player) > 9 && !enemies.some(e => distance(e, p) < 1.5));
+    if (!candidates.length)
+        candidates = spawnCells.filter(p => distance(p, player) > 4);
+    if (!candidates.length)
+        return false;
+    const p = candidates[Math.floor(Math.random() * candidates.length)];
+    enemies.push({ x: p.x, z: p.z, type, def, hp: def.hp, tint: color(def.tint), phase: random(0, TAU), attack: random(.4, 1.4), hurt: 0, routeTimer: 0, goal: null, yaw: 0 });
+    return true;
+}
+function prepareWave() {
+    const list = [...WAVES[state.wave]];
+    const extra = DIFFICULTIES[state.difficulty].count;
+    if (extra < 0)
+        list.pop();
+    for (let i = 0; i < extra; i++)
+        list.push(i % 2 ? 'guard' : 'scout');
+    state.queue = list;
+    state.spawnTimer = .05;
+    state.between = 0;
+    notify(`ONDA ${state.wave + 1} / ${WAVES.length}`, 2.3);
+    tone(360, .19, .06, 'sine');
+}
+function waveStep(dt) {
+    if (state.queue.length) {
+        state.spawnTimer -= dt;
+        if (state.spawnTimer <= 0 && enemies.length < 5) {
+            if (spawnEnemy(state.queue[0]))
+                state.queue.shift();
+            state.spawnTimer = .9;
+        }
+        return;
+    }
+    if (enemies.length)
+        return;
+    if (state.wave === WAVES.length - 1) {
+        finish(true);
+        return;
+    }
+    if (!state.between) {
+        state.between = 3;
+        notify('ONDA CONCLUÍDA!', 2.5);
+    }
+    state.between -= dt;
+    if (state.between <= 0) {
+        state.wave++;
+        player.hp = Math.min(100, player.hp + 20);
+        mags = WEAPONS.map(w => w.capacity);
+        prepareWave();
+    }
+}
+function reset() {
+    map = MAPS[state.map];
+    themeWall = color(map.wall);
+    themeTrim = color(map.trim);
+    makeWorld();
+    Object.assign(player, { yaw: 0, pitch: 0, hp: 100, slot: 0, recoil: 0, bob: 0, invincible: 0 });
+    Object.assign(state, { wave: 0, score: 0, elapsed: 0, cooldown: 0, reload: 0, flash: 0, hit: 0, damage: 0, notice: 0, between: 0, fired: 0, landed: 0, kills: 0, clock: 0, fireHeld: false, queue: [], spawnTimer: 0 });
+    mags = WEAPONS.map(w => w.capacity);
+    enemies = [];
+    pickups = [];
+    effects = [];
+    feed = [];
+    keys.clear();
+    $('toast').textContent = '';
+    prepareWave();
+    updateHUD();
+}
+function start() {
+    if (!renderer)
+        return;
+    state.map = Number($('map').value);
+    state.difficulty = $('difficulty').value;
+    initAudio();
+    reset();
+    state.mode = 'playing';
+    $('overlay').hidden = true;
+    $('pause').textContent = 'Pausar';
+    canvas.focus({ preventScroll: true });
+}
+function clearInput() { keys.clear(); state.fireHeld = false; drag = null; }
+function unlockMouse() { if (document.pointerLockElement === canvas)
+    document.exitPointerLock?.(); }
+function pause() {
+    if (state.mode !== 'playing')
+        return;
+    state.mode = 'paused';
+    clearInput();
+    unlockMouse();
+    $('menuTitle').textContent = 'PAUSADO';
+    $('menuText').textContent = 'Continue de onde parou ou inicie outra partida.';
+    $('settings').hidden = false;
+    $('resume').hidden = false;
+    $('start').textContent = 'REINICIAR';
+    $('overlay').hidden = false;
+    $('pause').textContent = 'Continuar';
+}
+function resume() {
+    if (state.mode !== 'paused')
+        return;
+    state.mode = 'playing';
+    $('overlay').hidden = true;
+    $('pause').textContent = 'Pausar';
+    canvas.focus({ preventScroll: true });
+}
+function finish(win) {
+    if (state.mode !== 'playing')
+        return;
+    state.mode = 'finished';
+    clearInput();
+    unlockMouse();
+    summarizeMatch(win);
+    const accuracy = state.fired ? Math.round(state.landed / state.fired * 100) : 0;
+    if (state.score > state.best) {
+        state.best = state.score;
+        try {
+            localStorage.setItem('neon-arena-best-v2', String(state.best));
+        }
+        catch (_) { }
+    }
+    $('menuTitle').textContent = win ? 'MISSÃO CONCLUÍDA' : 'FIM DE JOGO';
+    $('menuText').textContent = `${state.score} pontos · ${state.kills} robôs · ${accuracy}% de acerto · ${formatTime(state.elapsed)}`;
+    $('settings').hidden = false;
+    $('resume').hidden = true;
+    $('start').textContent = 'JOGAR NOVAMENTE';
+    $('overlay').hidden = false;
+    $('pause').textContent = 'Pausar';
+    updateHUD();
+    tone(win ? 520 : 65, .35, .09, 'triangle');
+}
+function formatTime(value) {
+    const seconds = Math.floor(value);
+    return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+}
+function updateHUD() {
+    const w = WEAPONS[player.slot];
+    $('hp').textContent = Math.ceil(player.hp);
+    $('hpBar').style.width = `${player.hp}%`;
+    $('hpBar').style.background = player.hp < 30 ? '#ff5970' : 'var(--accent)';
+    $('wave').textContent = `${state.wave + 1}/${WAVES.length}`;
+    $('score').textContent = state.score;
+    $('ammo').textContent = state.reload > 0 ? '...' : `${mags[player.slot]}/${w.capacity}`;
+    $('time').textContent = formatTime(state.elapsed);
+    $('weaponLabel').textContent = w.name;
+    $('record').textContent = `Recorde local: ${state.best}`;
+    $('damage').style.opacity = state.damage;
+    $('reticle').classList.toggle('hit', state.hit > 0);
+    $('feed').textContent = feed.map(f => f.text).join(' · ');
+    if (state.notice <= 0)
+        $('toast').textContent = '';
+}
+function notify(text, duration = 1.4) { $('toast').textContent = text; state.notice = duration; }
+function log(text) { feed.unshift({ text, left: 3.2 }); feed = feed.slice(0, 3); }
+function initAudio() {
+    if (!$('sound').checked)
+        return;
+    try {
+        if (!audio)
+            audio = new (window.AudioContext || window.webkitAudioContext)();
+        if (audio.state === 'suspended')
+            audio.resume().catch(() => { });
+    }
+    catch (_) { }
+}
+function tone(freq, length = .1, volume = .04, type = 'triangle') {
+    if (!audio || !$('sound').checked || audio.state !== 'running')
+        return;
+    try {
+        const osc = audio.createOscillator(), gain = audio.createGain();
+        const t = audio.currentTime;
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, t);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(25, freq * .55), t + length);
+        gain.gain.setValueAtTime(volume, t);
+        gain.gain.exponentialRampToValueAtTime(.001, t + length);
+        osc.connect(gain);
+        gain.connect(audio.destination);
+        osc.start(t);
+        osc.stop(t + length);
+    }
+    catch (_) { }
+}
+function chooseWeapon(slot) {
+    if (state.mode !== 'playing' || slot < 0 || slot >= WEAPONS.length || slot === player.slot)
+        return;
+    player.slot = slot;
+    state.reload = 0;
+    state.cooldown = .2;
+    player.recoil = .35;
+    notify(WEAPONS[slot].name, .8);
+    tone(280, .07, .035);
+}
+function reloadWeapon() {
+    if (state.mode !== 'playing' || state.reload > 0)
+        return;
+    const w = WEAPONS[player.slot];
+    if (mags[player.slot] === w.capacity)
+        return;
+    state.reload = w.reload;
+    notify('RECARREGANDO', w.reload);
+    tone(210, .13, .045);
+}
+function hitEnemy(e, damage) {
+    e.hp -= damage;
+    e.hurt = .15;
+    state.hit = .12;
+    if (e.hp > 0)
+        return;
+    const index = enemies.indexOf(e);
+    if (index < 0)
+        return;
+    enemies.splice(index, 1);
+    state.kills++;
+    const points = Math.round(e.def.points * DIFFICULTIES[state.difficulty].bonus);
+    state.score += points;
+    log(`+${points} ${e.def.name}`);
+    burst(e.x, .85, e.z, e.tint, 12);
+    if (state.kills % 3 === 0)
+        pickups.push({ x: e.x, z: e.z, phase: random(0, TAU), kind: player.hp < 80 ? 'health' : 'ammo' });
+    tone(440, .1, .05, 'sine');
+}
+function shoot() {
+    if (state.mode !== 'playing' || state.reload > 0 || state.cooldown > 0)
+        return;
+    const w = WEAPONS[player.slot];
+    if (!mags[player.slot]) {
+        reloadWeapon();
+        return;
+    }
+    mags[player.slot]--;
+    state.cooldown = w.delay;
+    state.flash = .07;
+    player.recoil = 1;
+    state.fired++;
+    tone(w.tone, .095, .07, 'sawtooth');
+    const origin = [player.x, eyeHeight(), player.z];
+    const forwardDir = forward();
+    let landed = false;
+    for (let i = 0; i < w.pellets; i++) {
+        const d = normalize([forwardDir[0] + random(-w.spread, w.spread), forwardDir[1] + random(-w.spread, w.spread), forwardDir[2] + random(-w.spread, w.spread)]);
+        let closest = wallDistance(origin, d), target = null;
+        for (const e of enemies) {
+            const s = e.def.size;
+            const t = rayBox(origin, d, [e.x - .38 * s, .05, e.z - .38 * s], [e.x + .38 * s, 1.9 * s, e.z + .38 * s]);
+            if (t < closest) {
+                closest = t;
+                target = e;
+            }
+        }
+        if (target) {
+            landed = true;
+            hitEnemy(target, w.damage);
+        }
+        if (closest < 65)
+            burst(origin[0] + d[0] * closest, origin[1] + d[1] * closest, origin[2] + d[2] * closest, target ? target.tint : C.gold, 2);
+    }
+    if (landed)
+        state.landed++;
+}
+function burst(x, y, z, tint, count) {
+    for (let i = 0; i < count; i++)
+        effects.push({ x, y, z, vx: random(-2, 2), vy: random(.2, 2.5), vz: random(-2, 2), left: random(.18, .55), tint });
+    if (effects.length > 110)
+        effects.splice(0, effects.length - 110);
+}
+function hurtPlayer(damage) {
+    if (player.invincible > 0)
+        return;
+    player.hp = Math.max(0, player.hp - damage * DIFFICULTIES[state.difficulty].damage);
+    state.damage = .75;
+    player.invincible = .22;
+    tone(80, .14, .055, 'square');
+    if (player.hp <= 0)
+        finish(false);
+}
+function enemyStep(e, dt) {
+    e.hurt = Math.max(0, e.hurt - dt);
+    e.attack -= dt;
+    e.routeTimer -= dt;
+    e.phase += dt * 5;
+    const d = distance(e, player);
+    const visible = lineClear(e.x, e.z, player.x, player.z);
+    const dx = player.x - e.x, dz = player.z - e.z;
+    e.yaw = Math.atan2(dx, dz);
+    if (visible && d < e.def.range) {
+        if (e.attack <= 0) {
+            e.attack = e.def.interval;
+            hurtPlayer(e.def.damage);
+            burst(e.x, 1.2 * e.def.size, e.z, C.red, 4);
+        }
+        return;
+    }
+    if (visible)
+        e.goal = { x: player.x, z: player.z };
+    else if (e.routeTimer <= 0 || !e.goal || distance(e, e.goal) < .3) {
+        e.goal = pathStep(e);
+        e.routeTimer = .45;
+    }
+    if (!e.goal)
+        return;
+    let mx = e.goal.x - e.x, mz = e.goal.z - e.z;
+    for (const other of enemies) {
+        if (other === e)
+            continue;
+        const separation = distance(other, e);
+        if (separation < .85 && separation > .01) {
+            mx += (e.x - other.x) / separation * .7;
+            mz += (e.z - other.z) / separation * .7;
+        }
+    }
+    const length = Math.hypot(mx, mz) || 1;
+    const speed = e.def.speed * DIFFICULTIES[state.difficulty].speed * dt;
+    move(e, mx / length * speed, mz / length * speed, .26);
+}
+function pickupStep(dt) {
+    for (let i = pickups.length - 1; i >= 0; i--) {
+        const item = pickups[i];
+        item.phase += dt * 2;
+        if (distance(item, player) > .85)
+            continue;
+        if (item.kind === 'health') {
+            player.hp = Math.min(100, player.hp + 30);
+            notify('+30 VIDA');
+        }
+        else {
+            mags = WEAPONS.map(w => w.capacity);
+            state.reload = 0;
+            notify('MUNIÇÃO COMPLETA');
+        }
+        pickups.splice(i, 1);
+        tone(620, .12, .05, 'sine');
+    }
+}
+function effectStep(dt) {
+    for (const e of effects) {
+        e.left -= dt;
+        e.x += e.vx * dt;
+        e.y += e.vy * dt;
+        e.z += e.vz * dt;
+        e.vy -= 5 * dt;
+    }
+    effects = effects.filter(e => e.left > 0 && e.y > 0);
+    for (const item of feed)
+        item.left -= dt;
+    feed = feed.filter(item => item.left > 0);
+}
+function eyeHeight() { return 1.48 + Math.sin(player.bob) * .035; }
+function playerStep(dt) {
+    const turn = (keys.has('arrowright') ? 1 : 0) - (keys.has('arrowleft') ? 1 : 0);
+    const look = (keys.has('arrowup') ? 1 : 0) - (keys.has('arrowdown') ? 1 : 0);
+    player.yaw += turn * dt * 1.8;
+    player.pitch = clamp(player.pitch + look * dt * 1.25, -1.1, 1.1);
+    const f = (keys.has('w') ? 1 : 0) - (keys.has('s') ? 1 : 0);
+    const side = (keys.has('d') ? 1 : 0) - (keys.has('a') ? 1 : 0);
+    const sprint = keys.has('shift');
+    if (f || side) {
+        const speed = (sprint ? 5.8 : 3.65) * dt / (Math.hypot(f, side) || 1);
+        move(player, (Math.sin(player.yaw) * f + Math.cos(player.yaw) * side) * speed, (-Math.cos(player.yaw) * f + Math.sin(player.yaw) * side) * speed);
+        player.bob += dt * (sprint ? 15 : 10);
+    }
+    else
+        player.bob = lerp(player.bob, Math.round(player.bob / TAU) * TAU, Math.min(1, dt * 6));
+    player.recoil = Math.max(0, player.recoil - dt * 5.4);
+    player.invincible = Math.max(0, player.invincible - dt);
+    state.cooldown = Math.max(0, state.cooldown - dt);
+    if (state.reload > 0) {
+        state.reload = Math.max(0, state.reload - dt);
+        if (!state.reload) {
+            mags[player.slot] = WEAPONS[player.slot].capacity;
+            tone(310, .06, .035);
+        }
+    }
+    if ((state.fireHeld || keys.has(' ')) && WEAPONS[player.slot].automatic)
+        shoot();
+}
+function update(dt) {
+    if (state.mode !== 'playing')
+        return;
+    state.elapsed += dt;
+    state.clock += dt;
+    state.flash = Math.max(0, state.flash - dt);
+    state.hit = Math.max(0, state.hit - dt);
+    state.damage = Math.max(0, state.damage - dt * 2.5);
+    state.notice = Math.max(0, state.notice - dt);
+    playerStep(dt);
+    for (const e of enemies) {
+        if (state.mode !== 'playing')
+            break;
+        enemyStep(e, dt);
+    }
+    if (state.mode !== 'playing')
+        return;
+    pickupStep(dt);
+    effectStep(dt);
+    waveStep(dt);
+    updateHUD();
+}
+// Modelo articulado de robô em blocos. A posição local acompanha a rotação.
+function robotPart(e, x, y, z, sx, sy, sz, tint, glow = 0) {
+    const s = e.def.size, c = Math.cos(e.yaw), a = Math.sin(e.yaw);
+    drawBox(e.x + (x * c + z * a) * s, y * s, e.z + (-x * a + z * c) * s, sx * s, sy * s, sz * s, tint, glow, e.yaw);
+}
+function drawRobot(e) {
+    const body = e.hurt > 0 ? C.white : e.tint;
+    const swing = Math.sin(e.phase) * .09;
+    robotPart(e, 0, .035, 0, .82, .055, .7, C.black);
+    robotPart(e, -.16, .32, swing, .23, .50, .24, C.gray);
+    robotPart(e, .16, .32, -swing, .23, .50, .24, C.gray);
+    robotPart(e, -.16, .11, .06 + swing, .25, .16, .35, C.metal);
+    robotPart(e, .16, .11, .06 - swing, .25, .16, .35, C.metal);
+    robotPart(e, 0, .91, 0, .62, .65, .40, body);
+    robotPart(e, 0, .95, .22, .33, .30, .055, C.dark);
+    robotPart(e, 0, .95, .26, .14, .14, .04, C.stripe, .85);
+    robotPart(e, -.43, 1.02, 0, .19, .46, .23, C.metal);
+    robotPart(e, .43, 1.02, 0, .19, .46, .23, C.metal);
+    robotPart(e, 0, 1.54, 0, .53, .40, .42, body);
+    robotPart(e, 0, 1.54, .225, .45, .18, .055, C.black);
+    robotPart(e, -.12, 1.54, .26, .11, .075, .03, C.red, 1);
+    robotPart(e, .12, 1.54, .26, .11, .075, .03, C.red, 1);
+    if (e.type === 'heavy') {
+        robotPart(e, -.43, 1.26, 0, .31, .23, .35, C.purple);
+        robotPart(e, .43, 1.26, 0, .31, .23, .35, C.purple);
+    }
+    if (e.type === 'guard' || e.type === 'heavy')
+        robotPart(e, .43, 1.02, .26, .19, .20, .39, C.black);
+    if (e.hurt > 0) {
+        const fraction = clamp(e.hp / e.def.hp, 0, 1);
+        robotPart(e, 0, 1.88, 0, .62, .06, .04, C.dark);
+        robotPart(e, -.31 + .31 * fraction, 1.88, .02, .62 * fraction, .045, .035, C.green, .8);
+    }
+}
+function drawPickup(p) {
+    const height = .32 + Math.sin(p.phase) * .10;
+    const tint = p.kind === 'health' ? C.green : C.gold;
+    drawBox(p.x, .025, p.z, .62, .04, .62, C.dark);
+    drawBox(p.x, height, p.z, .42, .42, .42, tint, .6, p.phase);
+    if (p.kind === 'health') {
+        drawBox(p.x, height + .24, p.z, .24, .04, .075, C.white, .6, p.phase);
+        drawBox(p.x, height + .24, p.z, .075, .04, .24, C.white, .6, p.phase);
+    }
+    else
+        drawBox(p.x, height + .24, p.z, .20, .05, .20, C.white, .6, p.phase);
+}
+function drawEffect(e) {
+    const size = .045 + e.left * .065;
+    drawBox(e.x, e.y, e.z, size, size, size, e.tint, .9);
+}
+// A arma em primeira pessoa usa uma segunda câmera; nunca atravessa o cenário.
+function drawWeapon(projection) {
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    camera(projection, [0, 0, 0], 0);
+    const w = WEAPONS[player.slot];
+    const x = .29 + Math.sin(player.bob) * .014;
+    const y = -.30 - Math.sin(player.bob) * .012 - (state.reload > 0 ? .18 : 0) - player.recoil * .025;
+    const z = -.58 + player.recoil * .075;
+    const l = w.size;
+    const tint = color(w.tint);
+    drawBox(x, y, z, .16, .13, .34 * l, C.black);
+    drawBox(x, y + .055, z - .09, .135, .10, .43 * l, tint);
+    drawBox(x, y + .063, z - .29 * l, .075, .072, .24 * l, C.dark);
+    drawBox(x, y + .075, z - .43 * l, .09, .09, .07, C.metal);
+    drawBox(x, y - .09, z + .06, .09, .19, .105, C.gray);
+    drawBox(x, y + .11, z - .01, .043, .052, .08, C.black);
+    drawBox(x, y + .127, z - .01, .025, .012, .035, C.stripe, .9);
+    drawBox(x + .073, y + .02, z - .08, .012, .028, .13, C.stripe, .75);
+    if (player.slot === 1)
+        drawBox(x, y - .10, z - .07, .10, .19, .12, C.dark);
+    if (player.slot === 2)
+        drawBox(x, y + .065, z - .26, .13, .09, .32, C.metal);
+    drawBox(x + .10, y - .13, z + .11, .14, .13, .23, C.metal);
+    if (state.flash > 0) {
+        drawBox(x, y + .07, z - .49 * l, .11, .11, .13, C.gold, 1);
+        drawBox(x, y + .07, z - .56 * l, .045, .045, .12, C.white, 1);
+    }
+}
+function render() {
+    resize();
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    const projection = perspective(PI / 2.8, canvas.width / Math.max(1, canvas.height), .05, 100);
+    const eye = [player.x, eyeHeight(), player.z];
+    const vp = multiply(projection, viewMatrix(eye, forward()));
+    camera(vp, eye, .023);
+    drawWorld();
+    for (const e of enemies)
+        drawRobot(e);
+    for (const p of pickups)
+        drawPickup(p);
+    for (const effect of effects)
+        drawEffect(effect);
+    drawWeapon(projection);
+}
+function loop(now) {
+    const dt = Math.min(.045, (now - previous) / 1000 || 0);
+    previous = now;
+    update(dt);
+    render();
+    updateTelemetry();
+    requestAnimationFrame(loop);
+}
+const keyboard = ['w', 'a', 's', 'd', 'arrowleft', 'arrowright', 'arrowup', 'arrowdown', ' ', 'shift', 'r', '1', '2', '3', 'p', 'escape'];
+window.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    if (!keyboard.includes(k))
+        return;
+    if (k === 'p' && state.mode === 'paused') {
+        e.preventDefault();
+        resume();
+        return;
+    }
+    if (state.mode !== 'playing')
+        return;
+    e.preventDefault();
+    keys.add(k);
+    if (e.repeat)
+        return;
+    if (k === 'r')
+        reloadWeapon();
+    if (k === ' ')
+        shoot();
+    if (['1', '2', '3'].includes(k))
+        chooseWeapon(Number(k) - 1);
+    if (k === 'p' || k === 'escape')
+        pause();
+});
+window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
+window.addEventListener('blur', clearInput);
+document.addEventListener('visibilitychange', () => { if (document.hidden && state.mode === 'playing')
+    pause(); });
+function turn(dx, dy, factor) {
+    const sensitivity = Number($('sensitivity').value) / 4;
+    player.yaw += dx * factor * sensitivity;
+    player.pitch = clamp(player.pitch - dy * factor * sensitivity, -1.1, 1.1);
+}
+canvas.addEventListener('pointerdown', e => {
+    if (state.mode !== 'playing')
+        return;
+    initAudio();
+    if (e.pointerType === 'mouse') {
+        if (document.pointerLockElement === canvas) {
+            state.fireHeld = true;
+            shoot();
+        }
+        else {
+            try {
+                const req = canvas.requestPointerLock?.();
+                req?.catch?.(() => { });
+            }
+            catch (_) { }
+            drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+            canvas.setPointerCapture?.(e.pointerId);
+        }
+    }
+    else {
+        drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        canvas.setPointerCapture?.(e.pointerId);
+    }
+});
+canvas.addEventListener('pointermove', e => {
+    if (state.mode !== 'playing' || document.pointerLockElement === canvas || drag?.id !== e.pointerId)
+        return;
+    turn(e.clientX - drag.x, e.clientY - drag.y, .006);
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+});
+document.addEventListener('mousemove', e => { if (state.mode === 'playing' && document.pointerLockElement === canvas)
+    turn(e.movementX, e.movementY, .0025); });
+document.addEventListener('pointerlockchange', () => { drag = null; state.fireHeld = false; });
+window.addEventListener('pointerup', e => { state.fireHeld = false; if (drag?.id === e.pointerId)
+    drag = null; });
+window.addEventListener('pointercancel', clearInput);
+for (const button of document.querySelectorAll('[data-key]')) {
+    const k = button.dataset.key;
+    button.addEventListener('pointerdown', e => { if (state.mode !== 'playing')
+        return; e.preventDefault(); button.setPointerCapture(e.pointerId); keys.add(k); });
+    for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
+        button.addEventListener(event, () => keys.delete(k));
+}
+$('fire').addEventListener('pointerdown', e => { e.preventDefault(); if (state.mode !== 'playing')
+    return; $('fire').setPointerCapture(e.pointerId); state.fireHeld = true; shoot(); });
+for (const event of ['pointerup', 'pointercancel', 'lostpointercapture'])
+    $('fire').addEventListener(event, () => state.fireHeld = false);
+$('reload').onclick = reloadWeapon;
+$('switch').onclick = () => chooseWeapon((player.slot + 1) % WEAPONS.length);
+$('start').onclick = start;
+$('resume').onclick = resume;
+$('pause').onclick = () => { if (state.mode === 'playing')
+    pause();
+else if (state.mode === 'paused')
+    resume(); };
+$('sound').onchange = () => { if ($('sound').checked)
+    initAudio(); };
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); state.mode = 'menu'; clearInput(); $('overlay').hidden = false; $('menuTitle').textContent = 'GRÁFICOS INTERROMPIDOS'; $('menuText').textContent = 'Recarregue a página para reiniciar o motor 3D.'; $('start').disabled = true; });
+function boot() {
+    if (!gl) {
+        $('menuText').textContent = 'Seu navegador não oferece WebGL. Ative a aceleração gráfica ou tente outro navegador.';
+        $('start').disabled = true;
+        return;
+    }
+    try {
+        renderer = initRenderer();
+        makeWorld();
+        updateHUD();
+        requestAnimationFrame(loop);
+    }
+    catch (error) {
+        console.error(error);
+        $('menuText').textContent = 'Não foi possível iniciar os gráficos 3D neste navegador.';
+        $('start').disabled = true;
+    }
+}
+// Radar de navegação e bússola: informações auxiliares, sem alterar a física.
+const radar = $('radar');
+const radarCtx = radar.getContext('2d');
+const prefs = {
+    map: 0,
+    difficulty: 'normal',
+    sound: true,
+    sensitivity: 4,
+    radar: true,
+    quality: 'auto'
+};
+const sessionStats = {
+    seconds: 0,
+    shots: 0,
+    hits: 0,
+    robots: 0,
+    score: 0,
+    wins: 0,
+    matches: 0
+};
+function loadPreferences() {
+    try {
+        const stored = JSON.parse(localStorage.getItem('neon-arena-prefs-v2') || '{}');
+        if (Number.isInteger(stored.map) && MAPS[stored.map])
+            prefs.map = stored.map;
+        if (Object.hasOwn(DIFFICULTIES, stored.difficulty))
+            prefs.difficulty = stored.difficulty;
+        if (typeof stored.sound === 'boolean')
+            prefs.sound = stored.sound;
+        if (Number.isFinite(stored.sensitivity))
+            prefs.sensitivity = clamp(stored.sensitivity, 1, 10);
+        if (typeof stored.radar === 'boolean')
+            prefs.radar = stored.radar;
+        if (['auto', 'low', 'high'].includes(stored.quality))
+            prefs.quality = stored.quality;
+    }
+    catch (_) {
+        // O jogo continua disponível mesmo quando o armazenamento é bloqueado.
+    }
+    $('map').value = prefs.map;
+    $('difficulty').value = prefs.difficulty;
+    $('sound').checked = prefs.sound;
+    $('sensitivity').value = prefs.sensitivity;
+    $('radarToggle').checked = prefs.radar;
+    $('quality').value = prefs.quality;
+}
+function savePreferences() {
+    prefs.map = Number($('map').value);
+    prefs.difficulty = $('difficulty').value;
+    prefs.sound = $('sound').checked;
+    prefs.sensitivity = Number($('sensitivity').value);
+    prefs.radar = $('radarToggle').checked;
+    prefs.quality = $('quality').value;
+    try {
+        localStorage.setItem('neon-arena-prefs-v2', JSON.stringify(prefs));
+    }
+    catch (_) {
+        // Preferências continuam válidas enquanto a aba estiver aberta.
+    }
+    syncRadarVisibility();
+}
+function syncRadarVisibility() {
+    radar.hidden = !prefs.radar || state.mode !== 'playing';
+}
+function drawRadar() {
+    if (!radarCtx || radar.hidden)
+        return;
+    const ctx = radarCtx;
+    const span = radar.width;
+    const unit = span / map.layout[0].length;
+    const coordinate = n => n / TILE * unit;
+    ctx.clearRect(0, 0, span, span);
+    ctx.fillStyle = '#091625';
+    ctx.fillRect(0, 0, span, span);
+    for (let row = 0; row < map.layout.length; row++) {
+        for (let col = 0; col < map.layout[row].length; col++) {
+            if (map.layout[row][col] === '#') {
+                ctx.fillStyle = '#385467';
+                ctx.fillRect(col * unit, row * unit, unit, unit);
+            }
+        }
+    }
+    for (const p of pickups) {
+        ctx.fillStyle = p.kind === 'health' ? '#54e5a4' : '#ffd375';
+        ctx.fillRect(coordinate(p.x) - 2, coordinate(p.z) - 2, 4, 4);
+    }
+    for (const e of enemies) {
+        // Radar de curto alcance: inimigos distantes não aparecem.
+        if (distance(e, player) > 12)
+            continue;
+        ctx.beginPath();
+        ctx.fillStyle = '#ff6077';
+        ctx.arc(coordinate(e.x), coordinate(e.z), 2.5, 0, TAU);
+        ctx.fill();
+    }
+    ctx.save();
+    ctx.translate(coordinate(player.x), coordinate(player.z));
+    ctx.rotate(player.yaw);
+    ctx.fillStyle = '#62f5d7';
+    ctx.beginPath();
+    ctx.moveTo(0, -6);
+    ctx.lineTo(4, 4);
+    ctx.lineTo(0, 2);
+    ctx.lineTo(-4, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+function compassLabel() {
+    const directions = ['N', 'NE', 'L', 'SE', 'S', 'SO', 'O', 'NO'];
+    const degree = ((player.yaw * 180 / PI) % 360 + 360) % 360;
+    const index = Math.round(degree / 45) % 8;
+    return `${directions[index]} · ${Math.round(degree) % 360}°`;
+}
+function updateTelemetry() {
+    syncRadarVisibility();
+    $('compass').hidden = state.mode !== 'playing';
+    $('compass').textContent = compassLabel();
+    $('remaining').textContent = `Robôs restantes: ${enemies.length + state.queue.length}`;
+    $('remaining').hidden = state.mode !== 'playing';
+    drawRadar();
+}
+function summarizeMatch(win) {
+    sessionStats.seconds += state.elapsed;
+    sessionStats.shots += state.fired;
+    sessionStats.hits += state.landed;
+    sessionStats.robots += state.kills;
+    sessionStats.score += state.score;
+    sessionStats.matches++;
+    if (win)
+        sessionStats.wins++;
+    updateSessionReport();
+}
+function updateSessionReport() {
+    const percent = sessionStats.shots ? Math.round(sessionStats.hits / sessionStats.shots * 100) : 0;
+    const values = [
+        ['Partidas concluídas', sessionStats.matches],
+        ['Vitórias', sessionStats.wins],
+        ['Robôs abatidos', sessionStats.robots],
+        ['Disparos', sessionStats.shots],
+        ['Precisão', `${percent}%`],
+        ['Pontos acumulados', sessionStats.score],
+        ['Tempo em jogo', formatTime(sessionStats.seconds)]
+    ];
+    const report = $('sessionReport');
+    report.replaceChildren();
+    for (const [label, value] of values) {
+        const group = document.createElement('div');
+        const name = document.createElement('span');
+        const number = document.createElement('strong');
+        name.textContent = label;
+        number.textContent = value;
+        group.append(name, number);
+        report.append(group);
+    }
+}
+function toggleFullScreen() {
+    const stage = $('stage');
+    if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => { });
+        return;
+    }
+    if (stage.requestFullscreen) {
+        stage.requestFullscreen().catch(() => notify('Tela cheia indisponível'));
+    }
+    else {
+        notify('Tela cheia indisponível');
+    }
+}
+for (const name of ['map', 'difficulty', 'sound', 'sensitivity', 'radarToggle', 'quality']) {
+    $(name).addEventListener('change', savePreferences);
+}
+$('fullscreen').addEventListener('click', toggleFullScreen);
+document.addEventListener('fullscreenchange', () => {
+    $('fullscreen').textContent = document.fullscreenElement ? 'Sair da tela cheia' : 'Tela cheia';
+});
+loadPreferences();
+updateSessionReport();
+boot();
+</script>
+</body>
+</html>
+
+
+
+
